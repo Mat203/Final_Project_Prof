@@ -1,7 +1,7 @@
 import Foundation
 
 class Product {
-    var id: UUID
+    let id: UUID
     var name: String
     var description: String
     var price: Double
@@ -13,5 +13,9 @@ class Product {
         self.description = description
         self.price = price
         self.stockLevel = stockLevel
+    }
+    
+    func updateStockLevel(newStockLevel: Int) {
+        self.stockLevel = newStockLevel
     }
 }

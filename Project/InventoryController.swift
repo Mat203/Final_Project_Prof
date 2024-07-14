@@ -1,31 +1,59 @@
 import Foundation
 
 class InventoryController {
-    let inventoryManager = InventoryManager.shared
+    private let store = Store()
+    private let database = Database.shared
+    private let worker: Worker
+    
+    init() {
+        self.worker = Worker(store: store, database: database)
+    }
     
     func addNewProduct(name: String, description: String, price: Double, stockLevel: Int) {
         let product = Product(name: name, description: description, price: price, stockLevel: stockLevel)
-        inventoryManager.addProduct(product: product)
+        store.addProduct(product: product)
     }
     
-    func removeProduct(by id: UUID) {
-        inventoryManager.removeProduct(by: id)
+    func removeProductByID(id: UUID) {
+        store.removeProduct(productId: id)
     }
     
-    func updateProduct(id: UUID, name: String? = nil, description: String? = nil, price: Double? = nil, stockLevel: Int? = nil) {
-        inventoryManager.updateProduct(id: id, name: name, description: description, price: price, stockLevel: stockLevel)
+    func updateProductInformation(id: UUID, name: String?, description: String?, price: Double?, stockLevel: Int?) {
+        guard let product = store.getProduct(productId: id) else { return }
+        if let name = name { product.name = name }
+        if let description = description { product.description = description }
+        if let price = price { product.price = price }
+        if let stockLevel = stockLevel { product.stockLevel = stockLevel }
     }
     
-    func viewProduct(by id: UUID) -> Product? {
-        return inventoryManager.viewProduct(by: id)
-    }
-    
-    func checkLowStockProducts() -> [Product] {
-        return inventoryManager.lowStockProducts()
+    func viewProductByID(id: UUID) -> Product? {
+        return store.getProduct(productId: id)
     }
     
     func viewAllProducts() -> [Product] {
-        return inventoryManager.getAllProducts()
+        return store.getAllProducts()
     }
+    
+    func viewLowStockProducts(threshold: Int = 3) -> [Product] {
+        return store.lowStockProducts(threshold: threshold)
+    }
+    
+    func createNewOrder() -> Order {
+        return worker.createOrder()
+    }
+    
+    func addProductToOrder(order: Order, productID: UUID, quantity: Int) {
+        guard let product = store.getProduct(productId: productID) else { return }
+        worker.addProductToOrder(order: order, product: product, quantity: quantity)
+    }
+    
+    func finalizeOrder(order: Order) {
+            for product in order.products {
+                if let storedProduct = store.getProduct(productId: product.id) {
+                    storedProduct.updateStockLevel(newStockLevel: storedProduct.stockLevel - 1)
+                    store.updateProduct(product: storedProduct)
+                }
+            }
+            database.saveOrder(order: order)
+        }
 }
-
