@@ -3,7 +3,7 @@ import XCTest
 class ProductTests: XCTestCase {
     
     func testProductInitialization() {
-        let product = Product(name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product = Product(id: UUID(), name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
         
         XCTAssertEqual(product.name, "Test Product")
         XCTAssertEqual(product.description, "This is a test product")
@@ -12,7 +12,7 @@ class ProductTests: XCTestCase {
     }
     
     func testUpdateStockLevel() {
-        let product = Product(name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product = Product(id: UUID(), name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
         product.updateStockLevel(newStockLevel: 10)
         
         XCTAssertEqual(product.stockLevel, 10)
@@ -30,7 +30,7 @@ class OrderTests: XCTestCase {
     
     func testAddProduct() {
         let order = Order()
-        let product = Product(name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product = Product(id: UUID(), name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
         
         order.addProduct(product: product, quantity: 2)
         
@@ -40,7 +40,7 @@ class OrderTests: XCTestCase {
     
     func testRemoveProduct() {
         let order = Order()
-        let product = Product(name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product = Product(id: UUID(), name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
         
         order.addProduct(product: product, quantity: 2)
         order.removeProduct(productId: product.id)
@@ -51,8 +51,8 @@ class OrderTests: XCTestCase {
     
     func testCalculateTotalPrice() {
         let order = Order()
-        let product1 = Product(name: "Test Product 1", description: "This is a test product", price: 10.0, stockLevel: 5)
-        let product2 = Product(name: "Test Product 2", description: "This is another test product", price: 15.0, stockLevel: 5)
+        let product1 = Product(id: UUID(), name: "Test Product 1", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product2 = Product(id: UUID(), name: "Test Product 2", description: "This is another test product", price: 15.0, stockLevel: 5)
         
         order.addProduct(product: product1, quantity: 1)
         order.addProduct(product: product2, quantity: 2)
@@ -65,7 +65,7 @@ class StoreTests: XCTestCase {
     
     func testAddProduct() {
         let store = Store()
-        let product = Product(name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product = Product(id: UUID(), name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
         
         store.addProduct(product: product)
         let fetchedProduct = store.getProduct(productId: product.id)
@@ -76,7 +76,7 @@ class StoreTests: XCTestCase {
     
     func testRemoveProduct() {
         let store = Store()
-        let product = Product(name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product = Product(id: UUID(), name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
         
         store.addProduct(product: product)
         store.removeProduct(productId: product.id)
@@ -87,7 +87,7 @@ class StoreTests: XCTestCase {
     
     func testUpdateProduct() {
         let store = Store()
-        let product = Product(name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product = Product(id: UUID(), name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
         
         store.addProduct(product: product)
         
@@ -100,8 +100,8 @@ class StoreTests: XCTestCase {
     
     func testGetAllProducts() {
         let store = Store()
-        let product1 = Product(name: "Test Product 1", description: "This is a test product", price: 10.0, stockLevel: 5)
-        let product2 = Product(name: "Test Product 2", description: "This is another test product", price: 15.0, stockLevel: 5)
+        let product1 = Product(id: UUID(), name: "Test Product 1", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product2 = Product(id: UUID(), name: "Test Product 2", description: "This is another test product", price: 15.0, stockLevel: 5)
         
         store.addProduct(product: product1)
         store.addProduct(product: product2)
@@ -113,8 +113,8 @@ class StoreTests: XCTestCase {
     
     func testLowStockProducts() {
         let store = Store()
-        let product1 = Product(name: "Test Product 1", description: "This is a test product", price: 10.0, stockLevel: 2)
-        let product2 = Product(name: "Test Product 2", description: "This is another test product", price: 15.0, stockLevel: 5)
+        let product1 = Product(id: UUID(), name: "Test Product 1", description: "This is a test product", price: 10.0, stockLevel: 2)
+        let product2 = Product(id: UUID(), name: "Test Product 2", description: "This is another test product", price: 15.0, stockLevel: 5)
         
         store.addProduct(product: product1)
         store.addProduct(product: product2)
@@ -140,7 +140,7 @@ class InventoryControllerTests: XCTestCase {
     
     func testRemoveProductByID() {
         let controller = InventoryController()
-        let product = Product(name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product = Product(id: UUID(), name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
         controller.addNewProduct(name: product.name, description: product.description, price: product.price, stockLevel: product.stockLevel)
         
         if let productID = controller.viewAllProducts().first?.id {
@@ -153,7 +153,7 @@ class InventoryControllerTests: XCTestCase {
     
     func testUpdateProductInformation() {
         let controller = InventoryController()
-        let product = Product(name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product = Product(id: UUID(), name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
         controller.addNewProduct(name: product.name, description: product.description, price: product.price, stockLevel: product.stockLevel)
         
         if let productID = controller.viewAllProducts().first?.id {
@@ -166,7 +166,7 @@ class InventoryControllerTests: XCTestCase {
     
     func testViewProductByID() {
         let controller = InventoryController()
-        let product = Product(name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product = Product(id: UUID(), name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
         controller.addNewProduct(name: product.name, description: product.description, price: product.price, stockLevel: product.stockLevel)
         
         if let productID = controller.viewAllProducts().first?.id {
@@ -178,8 +178,8 @@ class InventoryControllerTests: XCTestCase {
     
     func testViewAllProducts() {
         let controller = InventoryController()
-        let product1 = Product(name: "Test Product 1", description: "This is a test product", price: 10.0, stockLevel: 5)
-        let product2 = Product(name: "Test Product 2", description: "This is another test product", price: 15.0, stockLevel: 5)
+        let product1 = Product(id: UUID(), name: "Test Product 1", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product2 = Product(id: UUID(), name: "Test Product 2", description: "This is another test product", price: 15.0, stockLevel: 5)
         
         controller.addNewProduct(name: product1.name, description: product1.description, price: product1.price, stockLevel: product1.stockLevel)
         controller.addNewProduct(name: product2.name, description: product2.description, price: product2.price, stockLevel: product2.stockLevel)
@@ -191,8 +191,8 @@ class InventoryControllerTests: XCTestCase {
     
     func testViewLowStockProducts() {
         let controller = InventoryController()
-        let product1 = Product(name: "Test Product 1", description: "This is a test product", price: 10.0, stockLevel: 2)
-        let product2 = Product(name: "Test Product 2", description: "This is another test product", price: 15.0, stockLevel: 5)
+        let product1 = Product(id: UUID(), name: "Test Product 1", description: "This is a test product", price: 10.0, stockLevel: 2)
+        let product2 = Product(id: UUID(), name: "Test Product 2", description: "This is another test product", price: 15.0, stockLevel: 5)
         
         controller.addNewProduct(name: product1.name, description: product1.description, price: product1.price, stockLevel: product1.stockLevel)
         controller.addNewProduct(name: product2.name, description: product2.description, price: product2.price, stockLevel: product2.stockLevel)
@@ -214,7 +214,7 @@ class InventoryControllerTests: XCTestCase {
     
     func testAddProductToOrder() {
         let controller = InventoryController()
-        let product = Product(name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product = Product(id: UUID(), name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
         controller.addNewProduct(name: product.name, description: product.description, price: product.price, stockLevel: product.stockLevel)
         
         if let productID = controller.viewAllProducts().first?.id {
@@ -228,7 +228,7 @@ class InventoryControllerTests: XCTestCase {
     
     func testFinalizeOrder() {
         let controller = InventoryController()
-        let product = Product(name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
+        let product = Product(id: UUID(), name: "Test Product", description: "This is a test product", price: 10.0, stockLevel: 5)
         controller.addNewProduct(name: product.name, description: product.description, price: product.price, stockLevel: product.stockLevel)
         
         if let productID = controller.viewAllProducts().first?.id {

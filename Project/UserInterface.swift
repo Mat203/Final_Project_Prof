@@ -80,9 +80,15 @@ class UserInterface {
         print("Enter product description:")
         guard let description = readLine() else { return }
         print("Enter product price:")
-        guard let priceString = readLine(), let price = Double(priceString) else { return }
+        guard let priceString = readLine(), let price = Double(priceString) else {
+            print("Invalid price format. Please enter a valid number.")
+            return
+        }
         print("Enter product stock level:")
-        guard let stockLevelString = readLine(), let stockLevel = Int(stockLevelString) else { return }
+        guard let stockLevelString = readLine(), let stockLevel = Int(stockLevelString) else {
+            print("Invalid stock level format. Please enter a valid number.")
+            return
+        }
         
         inventoryController.addNewProduct(name: name, description: description, price: price, stockLevel: stockLevel)
     }
