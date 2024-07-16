@@ -1,18 +1,17 @@
 import Foundation
 
-class Database {
-    static let shared = Database()
+class OrderDatabase {
+    static let shared = OrderDatabase()
     private var orders: [UUID: Order] = [:]
     let ordersFilePath = "/Users/matvii/Desktop/Orders.csv"
-    let productsFilePath = "/Users/matvii/Desktop/Products.csv"
-
+    
     private init() {
-        loadOrdersFromCSV()
+        load()
     }
 
     func saveOrder(order: Order) {
         orders[order.orderId] = order
-        saveOrdersToCSV()
+        save()
     }
 
     func getAllOrders() -> [Order] {
@@ -23,7 +22,7 @@ class Database {
         return orders[id]
     }
 
-    private func saveOrdersToCSV() {
+    internal func save() {
         var csvContent = "Order ID,Product IDs,Total Price\n"
         for order in getAllOrders() {
             let productIDs = order.products.map { $0.id.uuidString }.joined(separator: ";")
@@ -38,47 +37,48 @@ class Database {
         }
     }
 
-    private func loadOrdersFromCSV() {
-            guard let fileContents = try? String(contentsOfFile: ordersFilePath) else {
-                print("No existing orders file found or unable to read.")
-                return
-            }
+    internal func load() {
+        guard let fileContents = try? String(contentsOfFile: ordersFilePath) else {
+            print("No existing orders file found or unable to read.")
+            return
+        }
 
-            // 1. Load Products First
-            let loadedProducts = loadProductsFromCSV()
+        let loadedProducts = ProductDatabase.shared.load()
 
-            let lines = fileContents.components(separatedBy: "\n").dropFirst()
-            for line in lines where !line.isEmpty {
-                let components = line.components(separatedBy: ",")
+        let lines = fileContents.components(separatedBy: "\n").dropFirst()
+        for line in lines where !line.isEmpty {
+            let components = line.components(separatedBy: ",")
+            
+            if components.count == 3,
+               let orderID = UUID(uuidString: components[0]),
+               let totalPrice = Double(components[2]) {
+
+                let productIDs = components[1].components(separatedBy: ";")
+                                             .compactMap { UUID(uuidString: $0) }
                 
-                // 2. Validate CSV Line
-                if components.count == 3,
-                   let orderID = UUID(uuidString: components[0]),
-                   let totalPrice = Double(components[2]) {
+                var loadedOrder = Order()
+                loadedOrder.orderId = orderID
+                loadedOrder.totalPrice = totalPrice
 
-                    // 3. Extract Product IDs
-                    let productIDs = components[1].components(separatedBy: ";")
-                                                 .compactMap { UUID(uuidString: $0) }
-                    
-                    
-                    // 4. Create Order Object
-                    var loadedOrder = Order()
-                    loadedOrder.orderId = orderID
-                    loadedOrder.totalPrice = totalPrice
-
-                    // 5. Match Products from Loaded Products
-                    loadedOrder.products = productIDs.compactMap { productID in
-                        loadedProducts.first { $0.id == productID }
-                    }
-                    // 6. Add to Orders Dictionary
-                    orders[orderID] = loadedOrder
-                } else {
-                    print("Warning: Skipping invalid line in CSV: \(line)")
+                loadedOrder.products = productIDs.compactMap { productID in
+                    loadedProducts.first { $0.id == productID }
                 }
+                orders[orderID] = loadedOrder
+            } else {
+                print("Warning: Skipping invalid line in CSV: \(line)")
             }
         }
+    }
+
+}
+
+class ProductDatabase {
+    static let shared = ProductDatabase()
+    let productsFilePath = "/Users/matvii/Desktop/Products.csv"
     
-    func saveProductToCSV(product: Product) {
+    private init() {}
+
+    func save(product: Product) {
         let csvLine = "\(product.id.uuidString),\"\(product.name)\",\"\(product.description)\",\(product.price),\(product.stockLevel)\n"
 
         do {
@@ -97,37 +97,37 @@ class Database {
         }
     }
     
-    func loadProductsFromCSV() -> [Product] {
-            var loadedProducts: [Product] = []
+    func load() -> [Product] {
+        var loadedProducts: [Product] = []
 
-            guard let fileContents = try? String(contentsOfFile: productsFilePath) else {
-                print("No existing products file found or unable to read.")
-                return loadedProducts
-            }
-
-            let lines = fileContents.components(separatedBy: "\n").dropFirst()
-            for line in lines where !line.isEmpty {
-                let components = line.components(separatedBy: ",")
-                if components.count == 5,
-                   let id = UUID(uuidString: components[0]),
-                   let price = Double(components[3]),
-                   let stockLevel = Int(components[4]) {
-
-                    let name = components[1].removingSurroundingQuotes()
-                    let description = components[2].removingSurroundingQuotes()
-
-                    let product = Product(id: id, name: name,
-                                          description: description,
-                                          price: price,
-                                          stockLevel: stockLevel)
-                    loadedProducts.append(product)
-                } else {
-                    print("Warning: Skipping invalid line in CSV: \(line)")
-                }
-            }
-
+        guard let fileContents = try? String(contentsOfFile: productsFilePath) else {
+            print("No existing products file found or unable to read.")
             return loadedProducts
         }
+
+        let lines = fileContents.components(separatedBy: "\n").dropFirst()
+        for line in lines where !line.isEmpty {
+            let components = line.components(separatedBy: ",")
+            if components.count == 5,
+               let id = UUID(uuidString: components[0]),
+               let price = Double(components[3]),
+               let stockLevel = Int(components[4]) {
+
+                let name = components[1].removingSurroundingQuotes()
+                let description = components[2].removingSurroundingQuotes()
+
+                let product = Product(id: id, name: name,
+                                      description: description,
+                                      price: price,
+                                      stockLevel: stockLevel)
+                loadedProducts.append(product)
+            } else {
+                print("Warning: Skipping invalid line in CSV: \(line)")
+            }
+        }
+
+        return loadedProducts
+    }
 }
 
 extension String {
@@ -135,4 +135,3 @@ extension String {
         return self.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
     }
 }
-

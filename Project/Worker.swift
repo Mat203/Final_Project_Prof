@@ -1,13 +1,14 @@
-
 import Foundation
 
 class Worker {
     private let store: Store
-    private let database: Database
+    private let orderDatabase: OrderDatabase
+    private let productDatabase: ProductDatabase
     
-    init(store: Store, database: Database) {
+    init(store: Store, orderDatabase: OrderDatabase, productDatabase: ProductDatabase) {
         self.store = store
-        self.database = database
+        self.orderDatabase = orderDatabase
+        self.productDatabase = productDatabase
     }
     
     func createOrder() -> Order {
@@ -22,8 +23,10 @@ class Worker {
         for product in order.products {
             if let storeProduct = store.getProduct(productId: product.id) {
                 storeProduct.updateStockLevel(newStockLevel: storeProduct.stockLevel - 1)
+                store.updateProduct(product: storeProduct)
+                productDatabase.save(product: storeProduct)
             }
         }
-        database.saveOrder(order: order)
+        orderDatabase.saveOrder(order: order)
     }
 }

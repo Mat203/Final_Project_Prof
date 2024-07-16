@@ -2,13 +2,13 @@ import Foundation
 
 class InventoryController {
     private let store = Store()
-    private let database = Database.shared
+    private let orderDatabase = OrderDatabase.shared
+    private let productDatabase = ProductDatabase.shared
     private let worker: Worker
-    let productsFilePath = "/Users/matvii/Desktop/Products.csv"
     
     init() {
-        self.worker = Worker(store: store, database: database)
-        let products = Database.shared.loadProductsFromCSV()
+        self.worker = Worker(store: store, orderDatabase: orderDatabase, productDatabase: productDatabase)
+        let products = productDatabase.load()
         for product in products {
             store.addProduct(product: product)
         }
@@ -18,7 +18,7 @@ class InventoryController {
         let idForProduct = UUID()
         let product = Product(id: idForProduct, name: name, description: description, price: price, stockLevel: stockLevel)
         store.addProduct(product: product)
-        database.saveProductToCSV(product: product)
+        productDatabase.save(product: product)
     }
     
     func removeProductByID(id: UUID) {
@@ -31,6 +31,8 @@ class InventoryController {
         if let description = description { product.description = description }
         if let price = price { product.price = price }
         if let stockLevel = stockLevel { product.stockLevel = stockLevel }
+        store.updateProduct(product: product)
+        productDatabase.save(product: product)
     }
     
     func viewProductByID(id: UUID) -> Product? {
@@ -55,12 +57,12 @@ class InventoryController {
     }
     
     func finalizeOrder(order: Order) {
-            for product in order.products {
-                if let storedProduct = store.getProduct(productId: product.id) {
-                    storedProduct.updateStockLevel(newStockLevel: storedProduct.stockLevel - 1)
-                    store.updateProduct(product: storedProduct)
-                }
+        for product in order.products {
+            if let storedProduct = store.getProduct(productId: product.id) {
+                storedProduct.updateStockLevel(newStockLevel: storedProduct.stockLevel - 1)
+                store.updateProduct(product: storedProduct)
             }
-            database.saveOrder(order: order)
         }
+        orderDatabase.saveOrder(order: order)
+    }
 }

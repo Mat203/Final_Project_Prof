@@ -2,25 +2,12 @@ import Foundation
 
 class UserInterface {
     private let inventoryController = InventoryController()
-    private let database = Database.shared
     
     func run() {
         print("Welcome to Anya Baluvana's Inventory System")
         
         while true {
-            print("""
-                Please choose an option:
-                1. View all products
-                2. View a product by ID
-                3. Add a new product
-                4. Remove a product by ID
-                5. Update product information
-                6. View low stock products
-                7. Create a new order
-                8. View all orders
-                9. View order by ID
-                10. Exit
-                """)
+            displayMainMenu()
             
             guard let choice = readLine(), let option = Int(choice) else {
                 print("Invalid choice. Please try again.")
@@ -28,24 +15,15 @@ class UserInterface {
             }
             
             switch option {
-            case 1:
-                viewAllProducts()
-            case 2:
-                viewProductByID()
-            case 3:
-                addNewProduct()
-            case 4:
-                removeProductByID()
-            case 5:
-                updateProductInformation()
-            case 6:
-                viewLowStockProducts()
-            case 7:
-                createNewOrder()
-            case 8:
-                viewAllOrders()
-            case 9:
-                viewOrderByID()
+            case 1: viewAllProducts()
+            case 2: viewProductByID()
+            case 3: addNewProduct()
+            case 4: removeProductByID()
+            case 5: updateProductInformation()
+            case 6: viewLowStockProducts()
+            case 7: createNewOrder()
+            case 8: viewAllOrders()
+            case 9: viewOrderByID()
             case 10:
                 print("Goodbye!")
                 return
@@ -55,10 +33,30 @@ class UserInterface {
         }
     }
     
+    private func displayMainMenu() {
+        print("""
+            Please choose an option:
+            1. View all products
+            2. View a product by ID
+            3. Add a new product
+            4. Remove a product by ID
+            5. Update product information
+            6. View low stock products
+            7. Create a new order
+            8. View all orders
+            9. View order by ID
+            10. Exit
+            """)
+    }
+    
     private func viewAllProducts() {
         let products = inventoryController.viewAllProducts()
-        for product in products {
-            print("ID: \(product.id), Name: \(product.name), Price: \(product.price), Stock Level: \(product.stockLevel)")
+        if products.isEmpty {
+            print("No products found.")
+        } else {
+            for product in products {
+                print("ID: \(product.id), Name: \(product.name), Price: \(product.price), Stock Level: \(product.stockLevel)")
+            }
         }
     }
     
@@ -106,11 +104,6 @@ class UserInterface {
             return
         }
         
-        guard let product = inventoryController.viewProductByID(id: id) else {
-            print("Product not found.")
-            return
-        }
-        
         print("Enter new name (leave blank to keep current):")
         let name = readLine()
         print("Enter new description (leave blank to keep current):")
@@ -127,8 +120,12 @@ class UserInterface {
     
     private func viewLowStockProducts() {
         let products = inventoryController.viewLowStockProducts()
-        for product in products {
-            print("ID: \(product.id), Name: \(product.name), Price: \(product.price), Stock Level: \(product.stockLevel)")
+        if products.isEmpty {
+            print("No products found with low stock.")
+        } else {
+            for product in products {
+                print("ID: \(product.id), Name: \(product.name), Price: \(product.price), Stock Level: \(product.stockLevel)")
+            }
         }
     }
     
@@ -136,12 +133,7 @@ class UserInterface {
         let order = Order()
         
         while true {
-            print("""
-                Order Menu:
-                1. Add product to order
-                2. Finalize order
-                3. Cancel order
-                """)
+            displayOrderMenu()
             
             guard let choice = readLine(), let option = Int(choice) else {
                 print("Invalid choice. Please try again.")
@@ -149,8 +141,7 @@ class UserInterface {
             }
             
             switch option {
-            case 1:
-                addProductToOrder(order: order)
+            case 1: addProductToOrder(order: order)
             case 2:
                 finalizeOrder(order: order)
                 print("Order finalized. Total price: \(order.totalPrice)")
@@ -162,6 +153,15 @@ class UserInterface {
                 print("Invalid choice. Please try again.")
             }
         }
+    }
+    
+    private func displayOrderMenu() {
+        print("""
+            Order Menu:
+            1. Add product to order
+            2. Finalize order
+            3. Cancel order
+            """)
     }
     
     private func addProductToOrder(order: Order) {
@@ -187,11 +187,11 @@ class UserInterface {
     }
     
     private func finalizeOrder(order: Order) {
-        database.saveOrder(order: order)
+        inventoryController.finalizeOrder(order: order)
     }
 
     private func viewAllOrders() {
-        let orders = database.getAllOrders()
+        let orders = OrderDatabase.shared.getAllOrders()
         if orders.isEmpty {
             print("No orders found.")
         } else {
@@ -219,7 +219,7 @@ class UserInterface {
             return
         }
 
-        if let order = database.getOrder(byID: id) {
+        if let order = OrderDatabase.shared.getOrder(byID: id) {
             print("Order ID: \(order.orderId), Total Price: \(order.totalPrice)")
             print("Products:")
             for product in order.products {
