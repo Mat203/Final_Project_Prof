@@ -7,8 +7,8 @@ class Product {
     var price: Double
     var stockLevel: Int
     
-    init(name: String, description: String, price: Double, stockLevel: Int) {
-        self.id = UUID()
+    init(id: UUID, name: String, description: String, price: Double, stockLevel: Int) {
+        self.id = id
         self.name = name
         self.description = description
         self.price = price

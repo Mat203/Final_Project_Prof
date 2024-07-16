@@ -1,7 +1,7 @@
 import Foundation
 
 class Order {
-    let orderId: UUID
+    var orderId: UUID
     var products: [Product]
     var totalPrice: Double
     

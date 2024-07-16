@@ -2,8 +2,8 @@ import Foundation
 
 class UserInterface {
     private let inventoryController = InventoryController()
-    private let database = Database.shared // Access the shared Database instance
-
+    private let database = Database.shared
+    
     func run() {
         print("Welcome to Anya Baluvana's Inventory System")
         

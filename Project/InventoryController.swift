@@ -4,14 +4,21 @@ class InventoryController {
     private let store = Store()
     private let database = Database.shared
     private let worker: Worker
+    let productsFilePath = "/Users/matvii/Desktop/Products.csv"
     
     init() {
         self.worker = Worker(store: store, database: database)
+        let products = Database.shared.loadProductsFromCSV()
+        for product in products {
+            store.addProduct(product: product)
+        }
     }
     
     func addNewProduct(name: String, description: String, price: Double, stockLevel: Int) {
-        let product = Product(name: name, description: description, price: price, stockLevel: stockLevel)
+        let idForProduct = UUID()
+        let product = Product(id: idForProduct, name: name, description: description, price: price, stockLevel: stockLevel)
         store.addProduct(product: product)
+        database.saveProductToCSV(product: product)
     }
     
     func removeProductByID(id: UUID) {
