@@ -2,7 +2,8 @@ import Foundation
 
 class UserInterface {
     private let inventoryController = InventoryController()
-    
+    private let database = Database.shared // Access the shared Database instance
+
     func run() {
         print("Welcome to Anya Baluvana's Inventory System")
         
@@ -16,7 +17,9 @@ class UserInterface {
                 5. Update product information
                 6. View low stock products
                 7. Create a new order
-                8. Exit
+                8. View all orders
+                9. View order by ID
+                10. Exit
                 """)
             
             guard let choice = readLine(), let option = Int(choice) else {
@@ -40,6 +43,10 @@ class UserInterface {
             case 7:
                 createNewOrder()
             case 8:
+                viewAllOrders()
+            case 9:
+                viewOrderByID()
+            case 10:
                 print("Goodbye!")
                 return
             default:
@@ -126,7 +133,7 @@ class UserInterface {
     }
     
     private func createNewOrder() {
-        let order = inventoryController.createNewOrder()
+        let order = Order()
         
         while true {
             print("""
@@ -145,7 +152,7 @@ class UserInterface {
             case 1:
                 addProductToOrder(order: order)
             case 2:
-                inventoryController.finalizeOrder(order: order)
+                finalizeOrder(order: order)
                 print("Order finalized. Total price: \(order.totalPrice)")
                 return
             case 3:
@@ -175,6 +182,51 @@ class UserInterface {
             return
         }
         
-        inventoryController.addProductToOrder(order: order, productID: id, quantity: quantity)
+        order.addProduct(product: product, quantity: quantity)
+        print("Product added to order.")
+    }
+    
+    private func finalizeOrder(order: Order) {
+        database.saveOrder(order: order)
+    }
+
+    private func viewAllOrders() {
+        let orders = database.getAllOrders()
+        if orders.isEmpty {
+            print("No orders found.")
+        } else {
+            for order in orders {
+                print("Order ID: \(order.orderId), Total Price: \(order.totalPrice)")
+                print("Products:")
+ 
+                if order.products.isEmpty {
+                    print("  - No products found for this order (may be deleted).")
+                } else {
+                    for product in order.products {
+                        print("  - \(product.name) (ID: \(product.id))")
+                    }
+                }
+
+                print("--------------------")
+            }
+        }
+    }
+
+    private func viewOrderByID() {
+        print("Enter the order ID:")
+        guard let idString = readLine(), let id = UUID(uuidString: idString) else {
+            print("Invalid ID format.")
+            return
+        }
+
+        if let order = database.getOrder(byID: id) {
+            print("Order ID: \(order.orderId), Total Price: \(order.totalPrice)")
+            print("Products:")
+            for product in order.products {
+                print("- \(product.name) (ID: \(product.id))")
+            }
+        } else {
+            print("Order not found.")
+        }
     }
 }
