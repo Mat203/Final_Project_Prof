@@ -126,8 +126,15 @@ class StoreTests: XCTestCase {
     }
 }
 
+
 class InventoryControllerTests: XCTestCase {
-    
+
+    override func setUp() {
+        super.setUp()
+        OrderDatabase.shared.enableTestingMode()
+        ProductDatabase.shared.enableTestingMode()
+    }
+
     func testAddNewProduct() {
         let controller = InventoryController()
         

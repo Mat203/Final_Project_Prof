@@ -1,28 +1,33 @@
 import Foundation
 
-class InventoryController {
-    private let store = Store()
-    private let orderDatabase = OrderDatabase.shared
-    private let productDatabase = ProductDatabase.shared
-    private let worker: Worker
-    
+class InventoryController: ObservableObject {
+    @Published private(set) var store: Store
+    let orderDatabase = OrderDatabase.shared
+    let productDatabase = ProductDatabase.shared
+    private lazy var worker: Worker = {
+        Worker(store: store, orderDatabase: orderDatabase, productDatabase: productDatabase)
+    }()
+
     init() {
-        self.worker = Worker(store: store, orderDatabase: orderDatabase, productDatabase: productDatabase)
+        self.store = Store()
         let products = productDatabase.load()
         for product in products {
             store.addProduct(product: product)
         }
     }
     
+    
     func addNewProduct(name: String, description: String, price: Double, stockLevel: Int) {
         let idForProduct = UUID()
         let product = Product(id: idForProduct, name: name, description: description, price: price, stockLevel: stockLevel)
         store.addProduct(product: product)
         productDatabase.save(product: product)
+        objectWillChange.send()
     }
     
     func removeProductByID(id: UUID) {
         store.removeProduct(productId: id)
+        objectWillChange.send()
     }
     
     func updateProductInformation(id: UUID, name: String?, description: String?, price: Double?, stockLevel: Int?) {
@@ -33,6 +38,7 @@ class InventoryController {
         if let stockLevel = stockLevel { product.stockLevel = stockLevel }
         store.updateProduct(product: product)
         productDatabase.save(product: product)
+        objectWillChange.send()
     }
     
     func viewProductByID(id: UUID) -> Product? {
@@ -47,13 +53,17 @@ class InventoryController {
         return store.lowStockProducts(threshold: threshold)
     }
     
+
     func createNewOrder() -> Order {
         return worker.createOrder()
     }
     
-    func addProductToOrder(order: Order, productID: UUID, quantity: Int) {
-        guard let product = store.getProduct(productId: productID) else { return }
+    func addProductToOrder(order: Order, productID: UUID, quantity: Int) -> Bool {
+        guard let product = store.getProduct(productId: productID) else { return false }
+        guard product.stockLevel >= quantity else { return false }
+        
         worker.addProductToOrder(order: order, product: product, quantity: quantity)
+        return true
     }
     
     func finalizeOrder(order: Order) {
@@ -64,5 +74,10 @@ class InventoryController {
             }
         }
         orderDatabase.saveOrder(order: order)
+        objectWillChange.send()
+    }
+    
+    func checkStockAvailability(product: Product, quantity: Int) -> Bool {
+        return product.stockLevel >= quantity
     }
 }

@@ -1,6 +1,6 @@
 import Foundation
 
-class Product {
+class Product: Identifiable, Hashable {
     let id: UUID
     var name: String
     var description: String
@@ -17,5 +17,13 @@ class Product {
     
     func updateStockLevel(newStockLevel: Int) {
         self.stockLevel = newStockLevel
+    }
+    
+    static func == (lhs: Product, rhs: Product) -> Bool {
+        return lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }

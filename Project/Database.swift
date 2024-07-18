@@ -3,15 +3,21 @@ import Foundation
 class OrderDatabase {
     static let shared = OrderDatabase()
     private var orders: [UUID: Order] = [:]
-    let ordersFilePath = "/Users/matvii/Desktop/Orders.csv"
-    
+    var ordersFilePath = "/Users/matvii/Downloads/Orders.csv"
+    private var isTesting: Bool = false
+
     private init() {
         load()
+    }
+    
+    func enableTestingMode() {
+        isTesting = true
+        orders = [:]
     }
 
     func saveOrder(order: Order) {
         orders[order.orderId] = order
-        save()
+        if !isTesting { save() }
     }
 
     func getAllOrders() -> [Order] {
@@ -38,7 +44,8 @@ class OrderDatabase {
     }
 
     internal func load() {
-        guard let fileContents = try? String(contentsOfFile: ordersFilePath) else {
+        guard !isTesting, FileManager.default.fileExists(atPath: ordersFilePath),
+              let fileContents = try? String(contentsOfFile: ordersFilePath) else {
             print("No existing orders file found or unable to read.")
             return
         }
@@ -69,16 +76,27 @@ class OrderDatabase {
             }
         }
     }
-
 }
 
 class ProductDatabase {
     static let shared = ProductDatabase()
-    let productsFilePath = "/Users/matvii/Desktop/Products.csv"
-    
+    var productsFilePath = "/Users/matvii/Downloads/Products.csv"
+    private var products: [UUID: Product] = [:]
+    private var isTesting: Bool = false
+
     private init() {}
 
+    func enableTestingMode() {
+        isTesting = true
+        products = [:] 
+    }
+
     func save(product: Product) {
+        products[product.id] = product
+        if !isTesting { saveToFile(product: product) }
+    }
+    
+    private func saveToFile(product: Product) {
         let csvLine = "\(product.id.uuidString),\"\(product.name)\",\"\(product.description)\",\(product.price),\(product.stockLevel)\n"
 
         do {
@@ -96,11 +114,14 @@ class ProductDatabase {
             print("Error saving product: \(error)")
         }
     }
-    
+
     func load() -> [Product] {
+        if isTesting { return Array(products.values) }
+        
         var loadedProducts: [Product] = []
 
-        guard let fileContents = try? String(contentsOfFile: productsFilePath) else {
+        guard FileManager.default.fileExists(atPath: productsFilePath),
+              let fileContents = try? String(contentsOfFile: productsFilePath) else {
             print("No existing products file found or unable to read.")
             return loadedProducts
         }

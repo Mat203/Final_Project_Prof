@@ -1,6 +1,6 @@
 import Foundation
 
-class Order {
+class Order: Identifiable {
     var orderId: UUID
     var products: [Product]
     var totalPrice: Double
